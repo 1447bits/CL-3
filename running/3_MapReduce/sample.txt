@@ -1,0 +1,1 @@
+python/sample.txt counts words words counts 1 23 34

@@ -1,0 +1,44 @@
+# client.py
+
+import Pyro4
+
+def main():
+    with open("server_uri.txt", "r") as f:
+        uri = f.read()
+    server = Pyro4.Proxy(uri)  # Connect to the remote server
+    str1 = input("Enter the first string: ")
+    str2 = input("Enter the second string: ")
+    result = server.concatenate_strings(str1, str2)
+    print("Concatenated Result:", result)
+
+if __name__ == "__main__":
+    main()
+
+
+# -------------------------------------------------------
+
+# server.py
+
+import Pyro4
+
+@Pyro4.expose
+class StringConcatenationServer:
+    def concatenate_strings(self, str1, str2):
+        result = str1 + str2
+        return result
+
+def main():
+    daemon = Pyro4.Daemon()  # Create a Pyro daemon
+    ns = Pyro4.locateNS()  # Locate the Pyro nameserver
+    # Create an instance of the server class
+    server = StringConcatenationServer()
+    # Register the server object with the Pyro nameserver
+    uri = daemon.register(server)
+    ns.register("string.concatenation", uri)
+    print("Server URI:", uri)
+    with open("server_uri.txt", "w") as f:
+        f.write(str(uri))
+    daemon.requestLoop()
+
+if __name__ == "__main__":
+    main()
